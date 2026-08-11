@@ -5,9 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vektorrechnung Zusammenfassung & Übungen</title>
     
+    <!-- Schriften: früh und nicht render-blockierend laden -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- MathJax für LaTeX Formeln -->
     <script>
         MathJax = {
@@ -29,6 +34,8 @@
                             700: '#6e5a4a',
                             600: '#8c7662',
                             500: '#ab927b',
+                            400: '#c3ae99',
+                            300: '#d5c5b3',
                         },
                         creme: {
                             100: '#fdfbf7',
@@ -46,14 +53,46 @@
     </script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        
         body {
             font-family: 'Inter', sans-serif;
             background-color: #6e5a4a; /* mocha-700 */
             color: #fdfbf7; /* creme-100 */
         }
-        
+
+        /* Überschriften in der Serifenschrift, Fließtext und Formeln bleiben Inter */
+        h1, h2, h3 {
+            font-family: 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
+            letter-spacing: -0.015em;
+        }
+
+        /* Sichtbarer Tastaturfokus – vorher fehlte er auf allen Bedienelementen */
+        :where(button, summary, a, [tabindex]):focus-visible {
+            outline: 2px solid #fbbf24;
+            outline-offset: 2px;
+            border-radius: 0.4rem;
+        }
+
+        /* Abgesetzte Formeln dürfen auf schmalen Displays in sich scrollen,
+           statt die ganze Seite breiter zu machen */
+        /* !important, weil MathJax sein eigenes Stylesheet erst zur Laufzeit nachlädt */
+        mjx-container {
+            max-width: 100% !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+        }
+        mjx-container[display="true"] { padding-bottom: 0.4rem; }
+        /* display:inline ignoriert max-width und overflow, deshalb inline-block */
+        mjx-container:not([display="true"]) {
+            display: inline-block !important;
+            vertical-align: middle;
+        }
+        mjx-container[display="true"]::-webkit-scrollbar { height: 5px; }
+        mjx-container[display="true"]::-webkit-scrollbar-thumb { background: #8c7662; border-radius: 3px; }
+        /* Kurze Formeln im Satz sollen keinen Balken zeigen; wischen bleibt möglich */
+        mjx-container:not([display="true"]) { scrollbar-width: none; }
+        mjx-container:not([display="true"])::-webkit-scrollbar { display: none; }
+        mjx-assistive-mml { position: absolute !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
+
         .sidebar-scroll::-webkit-scrollbar { width: 6px; }
         .sidebar-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 4px; }
         .sidebar-scroll::-webkit-scrollbar-thumb { background: #8c7662; border-radius: 4px; }
@@ -151,20 +190,25 @@
 </head>
 <body class="flex flex-col md:flex-row h-screen w-full overflow-hidden">
 
-    <nav class="w-full md:w-80 h-1/3 md:h-screen bg-mocha-900 border-b md:border-b-0 md:border-r border-mocha-600 flex flex-col z-20 shadow-xl">
-        <div class="p-6 border-b border-mocha-600 bg-mocha-900/50">
-            <h1 class="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-amber-200">
-                Vektorgeometrie
-            </h1>
-            <p class="text-creme-300 text-sm mt-2 font-medium">Abitur Zusammenfassung & Übungen</p>
+    <nav class="w-full md:w-80 md:h-screen shrink-0 bg-mocha-900 border-b md:border-b-0 md:border-r border-mocha-600 flex flex-col z-20 shadow-xl">
+        <div class="p-4 md:p-6 border-b border-mocha-600 flex items-center justify-between gap-4">
+            <div class="min-w-0">
+                <h1 class="text-2xl font-bold text-gold-400">Vektorgeometrie</h1>
+                <p class="text-creme-300 text-sm mt-1 md:mt-2 font-medium">Abitur Zusammenfassung &amp; Übungen</p>
+            </div>
+            <button id="navToggle" type="button" aria-expanded="false" aria-controls="nav-container"
+                    class="md:hidden shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg bg-mocha-800 border border-mocha-600 text-creme-200 font-medium hover:bg-mocha-700 transition-colors">
+                <span id="navToggleLabel">Kapitel</span>
+                <svg id="navToggleIcon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
         </div>
-        
-        <div class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-1.5" id="nav-container">
+
+        <div class="hidden md:flex md:flex-1 flex-col overflow-y-auto sidebar-scroll p-4 gap-1.5 max-h-[65vh] md:max-h-none" id="nav-container">
             <!-- Navigation wird generiert -->
         </div>
     </nav>
 
-    <main class="flex-1 h-2/3 md:h-screen overflow-y-auto p-6 md:p-12 relative bg-mocha-700" id="main-content">
+    <main class="flex-1 min-h-0 md:h-screen overflow-y-auto p-6 md:p-12 relative bg-mocha-700" id="main-content">
         <!-- Inhalte werden generiert -->
     </main>
 
@@ -249,14 +293,33 @@
                 const isActive = topic.id === activeTopicId;
                 btn.className = `w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-start gap-3 group ${isActive ? 'bg-gold-500/20 text-gold-400 border border-gold-500/30 shadow-inner' : 'text-creme-200 hover:bg-mocha-800 hover:text-white border border-transparent'}`;
                 btn.innerHTML = `<span class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${isActive ? 'bg-gold-500 text-mocha-900 shadow-md' : 'bg-mocha-700 text-creme-300 group-hover:bg-mocha-600'}">${index + 1}</span><span class="font-medium mt-0.5 leading-tight">${topic.title}</span>`;
-                btn.onclick = () => { 
-                    activeTopicId = topic.id; 
-                    renderNav(); 
-                    renderContent(); 
+                btn.setAttribute('aria-current', isActive ? 'true' : 'false');
+                btn.onclick = () => {
+                    activeTopicId = topic.id;
+                    renderNav();
+                    renderContent();
                     document.getElementById('main-content').scrollTop = 0; // Scroll nach oben!
+                    setNavOpen(false); // auf dem Handy die Kapitelliste wieder einklappen
                 };
                 container.appendChild(btn);
             });
+            const label = document.getElementById('navToggleLabel');
+            if (label) {
+                const nr = topics.findIndex(t => t.id === activeTopicId) + 1;
+                label.textContent = 'Kapitel ' + nr;
+            }
+        }
+
+        // Kapitelliste auf schmalen Displays auf- und zuklappen
+        function setNavOpen(open) {
+            const container = document.getElementById('nav-container');
+            const toggle = document.getElementById('navToggle');
+            const icon = document.getElementById('navToggleIcon');
+            if (!container || !toggle) return;
+            container.classList.toggle('hidden', !open);
+            container.classList.toggle('flex', open);
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (icon) icon.style.transform = open ? 'rotate(180deg)' : '';
         }
 
         // --- Übungsaufgaben Renderer ---
@@ -270,7 +333,7 @@
                         <h4 class="font-bold text-white mb-3">Aufgabe ${i+1}</h4>
                         <div class="text-creme-200 mb-4 text-sm md:text-base">${ex.q}</div>
                         <details class="group">
-                            <summary class="cursor-pointer font-bold text-amber-500 hover:text-amber-400 list-none flex items-center gap-2 select-none bg-mocha-800/50 p-3 rounded-lg border border-mocha-700/50">
+                            <summary class="cursor-pointer font-bold text-gold-400 hover:text-amber-200 list-none flex items-center gap-2 select-none bg-mocha-800/50 p-3 rounded-lg border border-mocha-700/50">
                                 <svg class="w-5 h-5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                 Musterlösung anzeigen
                             </summary>
@@ -319,7 +382,7 @@
                     <div id="fb_${key}_${i}" class="feedback"></div>`;
                 if (ex.a) {
                     html += `<details class="group mt-4">
-                        <summary class="cursor-pointer font-bold text-amber-500 hover:text-amber-400 list-none flex items-center gap-2 select-none bg-mocha-800/50 p-3 rounded-lg border border-mocha-700/50">
+                        <summary class="cursor-pointer font-bold text-gold-400 hover:text-amber-200 list-none flex items-center gap-2 select-none bg-mocha-800/50 p-3 rounded-lg border border-mocha-700/50">
                             <svg class="w-5 h-5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             Lösungsweg anzeigen
                         </summary>
@@ -581,7 +644,7 @@
                         <div class="flex-1 bg-mocha-800 p-6 md:p-8 rounded-2xl shadow-lg border border-mocha-600 flex flex-col justify-center">
                             <h3 class="text-2xl font-bold text-creme-100 mb-4">Der 3D Pythagoras</h3>
                             <p class="text-lg text-creme-200 mb-4">Den Abstand zweier Punkte $A(a_1|a_2|a_3)$ und $B(b_1|b_2|b_3)$ berechnet man mit einer einfachen Erweiterung des Satzes des Pythagoras auf drei Dimensionen.</p>
-                            <div class="bg-amber-900/30 border-l-4 border-amber-500 p-5 rounded-r-xl my-6">
+                            <div class="bg-amber-900/30 border border-amber-500/45 p-5 rounded-xl my-6">
                                 <div class="text-xl md:text-2xl font-bold text-center text-gold-300 math-box">
                                     $$d(A,B) = \\sqrt{(b_1 - a_1)^2 + (b_2 - a_2)^2 + (b_3 - a_3)^2}$$
                                 </div>
@@ -723,7 +786,7 @@
                         <div class="bg-mocha-800 p-6 md:p-8 rounded-2xl shadow-lg border border-mocha-600 mb-8">
                             <h4 class="text-xl font-bold text-white mb-4">Rechnerische Lösung</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                                <div class="bg-amber-900/30 border-l-4 border-amber-500 p-6 rounded-r-xl border-y border-r border-amber-500/30">
+                                <div class="bg-amber-900/30 border border-amber-500/45 p-6 rounded-xl">
                                     <div class="text-2xl text-center font-bold text-gold-300">$$\\vec{a} \\pm \\vec{b} = \\begin{pmatrix} a_1 \\pm b_1 \\\\ a_2 \\pm b_2 \\\\ a_3 \\pm b_3 \\end{pmatrix}$$</div>
                                 </div>
                                 <div class="bg-mocha-900 p-5 rounded-xl border border-mocha-600 h-full flex flex-col justify-center">
@@ -770,7 +833,7 @@
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                             <div class="bg-mocha-800 p-6 md:p-8 rounded-2xl shadow-lg border border-mocha-600 flex flex-col">
                                 <h4 class="text-xl font-bold text-white mb-4">Rechnerische Lösung</h4>
-                                <div class="bg-amber-900/30 border-l-4 border-amber-500 p-6 rounded-r-xl mb-6 border-y border-r border-amber-500/30">
+                                <div class="bg-amber-900/30 border border-amber-500/45 p-6 rounded-xl mb-6">
                                     <div class="text-2xl text-center font-bold text-gold-300">$$k \\cdot \\vec{a} = \\begin{pmatrix} k \\cdot a_1 \\\\ k \\cdot a_2 \\\\ k \\cdot a_3 \\end{pmatrix}$$</div>
                                 </div>
                             </div>
@@ -821,7 +884,7 @@
                     <div class="bg-mocha-800 p-6 md:p-8 rounded-2xl shadow-lg border border-mocha-600 mb-8">
                         <h3 class="text-2xl font-bold text-white mb-4">Wann sind Vektoren kollinear?</h3>
                         <p class="text-lg text-creme-200 mb-6">Zwei Vektoren $\\vec{a}$ und $\\vec{b}$ heißen <strong class="text-white">kollinear</strong>, wenn sie sich durch skalare Multiplikation ineinander überführen lassen. Geometrisch bedeutet das: Sie verlaufen parallel (oder anti-parallel) zueinander.</p>
-                        <div class="bg-amber-900/30 border-l-4 border-amber-500 p-6 rounded-r-xl mb-4 border-y border-r border-amber-500/30 w-full lg:w-1/2">
+                        <div class="bg-amber-900/30 border border-amber-500/45 p-6 rounded-xl mb-4 w-full lg:w-1/2">
                             <div class="text-2xl text-center font-bold text-gold-300">$$\\vec{a} = k \\cdot \\vec{b}$$</div>
                         </div>
                     </div>
@@ -841,15 +904,15 @@
                             <p class="text-sm text-creme-200 mb-6">Wenn zwei Vektoren <strong class="text-white">nicht kollinear</strong> sind, spannen sie gemeinsam eine flache Ebene im 3D-Raum auf. Jeder beliebige Vektor $\\vec{c}$, der in dieser Ebene liegt, lässt sich als Mix aus den ersten beiden zusammensetzen:</p>
                             <div class="text-center font-bold text-gold-300 bg-mocha-900 p-3 rounded-lg mb-6 border border-mocha-600">$$\\vec{c} = r \\cdot \\vec{a} + s \\cdot \\vec{b}$$</div>
                             <div id="stepExplanations3" class="space-y-4">
-                                <div class="step-card3 bg-mocha-900 p-4 rounded-xl border-l-4 border-mocha-600 transition-all duration-300" data-step="1">
+                                <div class="step-card3 bg-mocha-900 p-4 rounded-xl border border-mocha-600/45 transition-all duration-300" data-step="1">
                                     <strong class="text-blue-400 block mb-1">Schritt 1: Grundlagen</strong>
                                     <span class="text-sm text-creme-200">Zwei linear unabhängige Vektoren $\\vec{a}$ und $\\vec{b}$.</span>
                                 </div>
-                                <div class="step-card3 bg-mocha-900 p-4 rounded-xl border-l-4 border-mocha-600 transition-all duration-300 opacity-40" data-step="2">
+                                <div class="step-card3 bg-mocha-900 p-4 rounded-xl border border-mocha-600/45 transition-all duration-300 opacity-40" data-step="2">
                                     <strong class="text-white block mb-1">Schritt 2: Die Ebene</strong>
                                     <span class="text-sm text-creme-200">Sie spannen ein Gitter / eine Ebene auf.</span>
                                 </div>
-                                <div class="step-card3 bg-mocha-900 p-4 rounded-xl border-l-4 border-mocha-600 transition-all duration-300 opacity-40" data-step="3">
+                                <div class="step-card3 bg-mocha-900 p-4 rounded-xl border border-mocha-600/45 transition-all duration-300 opacity-40" data-step="3">
                                     <strong class="text-red-400 block mb-1">Schritt 3: Zusammensetzen</strong>
                                     <span class="text-sm text-creme-200">$\\vec{c}$ ist eine Linearkombination aus $\\vec{a}$ und $\\vec{b}$.</span>
                                 </div>
@@ -911,7 +974,7 @@
                         <h3 class="text-2xl font-bold text-creme-100 mb-6">Gerade aus zwei Punkten bestimmen</h3>
                         <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
                             <div class="lg:col-span-3">
-                                <div class="bg-amber-900/30 border-l-4 border-amber-500 p-4 rounded-r-lg mt-2 text-center font-bold text-gold-300 math-box">
+                                <div class="bg-amber-900/30 border border-amber-500/45 p-4 rounded-lg mt-2 text-center font-bold text-gold-300 math-box">
                                     $$g: \\vec{x} = \\vec{p} + r \\cdot (\\vec{q} - \\vec{p})$$
                                 </div>
                             </div>
@@ -1059,15 +1122,15 @@
                             </div>
                             <div class="flex flex-col gap-4">
                                 <h4 class="font-bold text-white">Lösungsmengen interpretieren</h4>
-                                <div class="bg-green-900/20 border-l-4 border-green-500 p-4 rounded-r-lg">
+                                <div class="bg-green-900/20 border border-green-500/45 p-4 rounded-lg">
                                     <strong class="text-green-400 block text-sm">Genau eine Lösung</strong>
                                     <p class="text-xs text-creme-200 mt-1">Gauß geht perfekt auf (z.B. $r=1, s=2$).<br>&rarr; Geometrisch: <strong class="text-white">Schnittpunkt</strong> existiert.</p>
                                 </div>
-                                <div class="bg-red-900/20 border-l-4 border-red-500 p-4 rounded-r-lg">
+                                <div class="bg-red-900/20 border border-red-500/45 p-4 rounded-lg">
                                     <strong class="text-red-400 block text-sm">Keine Lösung (Widerspruch)</strong>
                                     <p class="text-xs text-creme-200 mt-1">Es entsteht eine falsche Aussage (z.B. $0 = 5$).<br>&rarr; Geometrisch: <strong class="text-white">Windschief / Echt parallel</strong>.</p>
                                 </div>
-                                <div class="bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                                <div class="bg-blue-900/20 border border-blue-500/45 p-4 rounded-lg">
                                     <strong class="text-blue-400 block text-sm">Unendlich viele Lösungen</strong>
                                     <p class="text-xs text-creme-200 mt-1">Eine Zeile fällt weg (z.B. $0 = 0$).<br>&rarr; Geometrisch: <strong class="text-white">Identisch / Liegt in Ebene</strong>.</p>
                                 </div>
@@ -1101,7 +1164,7 @@
                     </div>
                     <div class="bg-mocha-800 p-6 md:p-8 rounded-2xl shadow-lg border border-mocha-600 mb-8">
                         <p class="text-lg text-creme-200 mb-6">Eine Gerade kann eine Ebene durchstoßen, parallel zu ihr liegen oder komplett in ihr enthalten sein. Das Prinzip zur Überprüfung ist immer das Gleiche: <strong class="text-white">Gleichsetzen!</strong></p>
-                        <div class="bg-amber-900/30 border-l-4 border-amber-500 p-6 rounded-r-xl mb-8 border-y border-r border-amber-500/30">
+                        <div class="bg-amber-900/30 border border-amber-500/45 p-6 rounded-xl mb-8">
                             <div class="text-xl text-center font-bold text-gold-300">$$g = E$$</div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1147,7 +1210,7 @@
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                         <div class="bg-mocha-800 p-6 md:p-8 rounded-2xl shadow-lg border border-mocha-600">
                             <h3 class="text-2xl font-bold text-creme-100 mb-4">Ein Skalar als Ergebnis</h3>
-                            <div class="bg-amber-900/30 border-l-4 border-amber-500 p-5 rounded-r-xl mb-6 text-center text-lg font-bold text-gold-300 border-y border-r border-amber-500/30">
+                            <div class="bg-amber-900/30 border border-amber-500/45 p-5 rounded-xl mb-6 text-center text-lg font-bold text-gold-300">
                                 $$\\vec{a} \\cdot \\vec{b} = a_1 \\cdot b_1 + a_2 \\cdot b_2 + a_3 \\cdot b_3$$
                             </div>
                             <div class="bg-mocha-900 p-4 rounded-xl border border-mocha-600">
@@ -1193,7 +1256,7 @@
                     <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
                         <div class="lg:col-span-3 bg-mocha-800 p-6 md:p-8 rounded-2xl shadow-lg border border-mocha-600">
                             <p class="text-lg text-creme-200 mb-6">Schneiden sich zwei Geraden, so schließen sie einen Winkel $\\alpha$ ein. Da sie zwei Winkel bilden (spitz und stumpf), ist in der Mathematik <strong class="text-white">immer der kleinere Winkel</strong> (also $\\alpha \\le 90^\\circ$) gesucht.</p>
-                            <div class="bg-amber-900/30 border-l-4 border-amber-500 p-6 rounded-r-xl mb-6 border-y border-r border-amber-500/30">
+                            <div class="bg-amber-900/30 border border-amber-500/45 p-6 rounded-xl mb-6">
                                 <div class="text-xl md:text-2xl text-center font-bold text-gold-300 math-box">
                                     $$\\cos(\\alpha) = \\frac{|\\vec{u} \\cdot \\vec{v}|}{|\\vec{u}| \\cdot |\\vec{v}|}$$
                                 </div>
@@ -1236,7 +1299,7 @@
                                 <h3 class="text-2xl font-bold text-creme-100 mb-4">Besonderheit: Der Sinus!</h3>
                                 <p class="text-creme-200 mb-4">Sucht man den Schnittwinkel zwischen einer Geraden und einer Ebene, rechnet man normalerweise mit dem Richtungsvektor $\\vec{u}$ der Gerade und dem <strong class="text-white">Normalenvektor $\\vec{n}$</strong> der Ebene.</p>
                                 <p class="text-creme-200 mb-6"><strong>Aber Achtung:</strong> Der Normalenvektor steht bereits 90° senkrecht auf der Ebene! Um direkt den richtigen Winkel $\\alpha$ zur Ebene zu bekommen, tauschen wir in der Formel einfach $\\cos$ gegen $\\sin$ aus:</p>
-                                <div class="bg-amber-900/30 border-l-4 border-amber-500 p-5 rounded-r-xl border-y border-r border-amber-500/30">
+                                <div class="bg-amber-900/30 border border-amber-500/45 p-5 rounded-xl">
                                     <div class="text-xl md:text-2xl text-center font-bold text-gold-300 math-box">
                                         $$\\sin(\\alpha) = \\frac{|\\vec{u} \\cdot \\vec{n}|}{|\\vec{u}| \\cdot |\\vec{n}|}$$
                                     </div>
@@ -1279,7 +1342,7 @@
                                 <strong class="text-white block mb-2 text-lg">Der Normalenvektor $\\vec{n}$</strong>
                                 <p class="text-sm text-creme-200">Ein Vektor, der genau 90° (orthogonal) auf der gesamten Ebene steht.</p>
                             </div>
-                            <div class="bg-amber-900/30 border-l-4 border-amber-500 p-5 rounded-r-xl mt-6 border-y border-r border-amber-500/30">
+                            <div class="bg-amber-900/30 border border-amber-500/45 p-5 rounded-xl mt-6">
                                 <div class="text-xl text-center font-bold text-gold-300">
                                     $$E: (\\vec{x} - \\vec{p}) \\cdot \\vec{n} = 0$$
                                 </div>
@@ -1322,7 +1385,7 @@
                     </div>
                     <div class="bg-mocha-800 p-6 md:p-8 rounded-2xl shadow-lg border border-mocha-600 mb-8">
                         <p class="text-lg text-creme-200 mb-6">Multipliziert man die Normalenform $(\\vec{x} - \\vec{p}) \\cdot \\vec{n} = 0$ mithilfe des Skalarprodukts komplett aus, verschwinden die Vektoren. Übrig bleibt eine einfache lineare Gleichung mit $x_1, x_2, x_3$.</p>
-                        <div class="bg-amber-900/30 border-l-4 border-amber-500 p-6 rounded-r-xl mb-8 border-y border-r border-amber-500/30 w-full max-w-2xl mx-auto">
+                        <div class="bg-amber-900/30 border border-amber-500/45 p-6 rounded-xl mb-8 w-full max-w-2xl mx-auto">
                             <div class="text-2xl text-center font-bold text-gold-300">
                                 $$E: n_1 \\cdot x_1 + n_2 \\cdot x_2 + n_3 \\cdot x_3 = d$$
                             </div>
@@ -1386,17 +1449,17 @@
                                 <h4 class="text-xl font-bold text-white mb-4">Beispielrechnung</h4>
                                 <p class="text-creme-200 text-sm mb-4">Ebene <strong class="text-white">E: 2$x_1$ + 3$x_2$ + $x_3$ = 6</strong></p>
                                 <div id="stepExplanations9" class="space-y-3">
-                                    <div class="step-card9 bg-mocha-900 p-3 rounded-xl border-l-4 border-mocha-600 transition-all duration-300 opacity-40" data-step="1">
+                                    <div class="step-card9 bg-mocha-900 p-3 rounded-xl border border-mocha-600/45 transition-all duration-300 opacity-40" data-step="1">
                                         <strong class="text-blue-400 block mb-1">1. Schnittpunkt $x_1$-Achse</strong>
                                         <span class="text-xs text-creme-200 block mb-1">Wir setzen $x_2 = 0$ und $x_3 = 0$:</span>
                                         <div class="font-mono text-sm bg-mocha-800 p-2 rounded border border-mocha-600 text-white">2x₁ = 6 &rArr; x₁ = 3 <br><strong class="text-gold-300">S₁(3 | 0 | 0)</strong></div>
                                     </div>
-                                    <div class="step-card9 bg-mocha-900 p-3 rounded-xl border-l-4 border-mocha-600 transition-all duration-300 opacity-40" data-step="2">
+                                    <div class="step-card9 bg-mocha-900 p-3 rounded-xl border border-mocha-600/45 transition-all duration-300 opacity-40" data-step="2">
                                         <strong class="text-green-400 block mb-1">2. Schnittpunkt $x_2$-Achse</strong>
                                         <span class="text-xs text-creme-200 block mb-1">Wir setzen $x_1 = 0$ und $x_3 = 0$:</span>
                                         <div class="font-mono text-sm bg-mocha-800 p-2 rounded border border-mocha-600 text-white">3x₂ = 6 &rArr; x₂ = 2 <br><strong class="text-gold-300">S₂(0 | 2 | 0)</strong></div>
                                     </div>
-                                    <div class="step-card9 bg-mocha-900 p-3 rounded-xl border-l-4 border-mocha-600 transition-all duration-300 opacity-40" data-step="3">
+                                    <div class="step-card9 bg-mocha-900 p-3 rounded-xl border border-mocha-600/45 transition-all duration-300 opacity-40" data-step="3">
                                         <strong class="text-red-400 block mb-1">3. Schnittpunkt $x_3$-Achse</strong>
                                         <span class="text-xs text-creme-200 block mb-1">Wir setzen $x_1 = 0$ und $x_2 = 0$:</span>
                                         <div class="font-mono text-sm bg-mocha-800 p-2 rounded border border-mocha-600 text-white">1x₃ = 6 &rArr; x₃ = 6 <br><strong class="text-gold-300">S₃(0 | 0 | 6)</strong></div>
@@ -1442,7 +1505,7 @@
                         <h2 class="text-3xl md:text-4xl font-extrabold text-creme-100 mt-2">Abstandsprobleme</h2>
                     </div>
 
-                    <p class="text-lg text-creme-200 mb-6">Jeder Abstand in der Vektorgeometrie ist der <strong class="text-white">kürzeste</strong> Weg – und der ist immer der <strong class="text-white">senkrechte</strong> Weg. Alle Verfahren dieses Kapitels sind nur unterschiedliche Wege, diese Senkrechte zu finden.</p>
+                    <p class="text-lg text-creme-200 mb-6">Der Abstand ist immer der kürzeste Weg, und der kürzeste Weg steht immer <strong class="text-white">senkrecht</strong>. Die Verfahren in diesem Kapitel unterscheiden sich nur darin, wie sie diese Senkrechte finden.</p>
 
                     <div class="bg-mocha-800 border border-mocha-600 rounded-2xl p-5 mb-10 shadow-lg">
                         <h4 class="font-bold text-gold-400 mb-3 text-sm uppercase tracking-wider">Die vier Fälle – direkt springen</h4>
@@ -1469,12 +1532,12 @@
                     <!-- ================= A: Punkt - Ebene ================= -->
                     <div class="mb-16" id="sec17A">
                         <h3 class="text-2xl font-bold text-white mb-2 border-b border-mocha-600 pb-2">A. Abstand Punkt &ndash; Ebene</h3>
-                        <p class="text-creme-300 text-sm mb-6">Zwei Wege: das <strong class="text-white">Lotfußpunktverfahren</strong> (liefert zusätzlich den Fußpunkt) und die <strong class="text-white">Hesse'sche Normalenform</strong> (liefert nur den Abstand, dafür in einer Zeile).</p>
+                        <p class="text-creme-300 text-sm mb-6">Zwei Wege: das Lotfußpunktverfahren liefert zusätzlich den Fußpunkt, die Hesse'sche Normalenform nur den Abstand, dafür in einer Zeile.</p>
 
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch mb-8">
                             <div class="bg-mocha-800 p-6 rounded-2xl shadow-lg border border-mocha-600 flex flex-col justify-center">
                                 <h4 class="text-xl font-bold text-gold-400 mb-3">A1 &ndash; Das Lotfußpunktverfahren</h4>
-                                <div class="bg-mocha-900 p-4 rounded-xl border-l-4 border-gold-500 mb-4 shadow-inner">
+                                <div class="bg-mocha-900 p-4 rounded-xl border border-gold-500/45 mb-4 shadow-inner">
                                     <strong class="text-white block mb-1">Die Kernidee:</strong>
                                     <p class="text-sm text-creme-200">Wir schicken vom Punkt $P$ aus eine Gerade <strong class="text-white">senkrecht</strong> auf die Ebene zu. Senkrecht zur Ebene heißt: in Richtung des Normalenvektors $\\vec{n}$. Wo diese Lotgerade die Ebene durchstößt, liegt der Lotfußpunkt $F$.</p>
                                 </div>
@@ -1506,13 +1569,13 @@
                             <p class="text-creme-100 mb-5">Gesucht ist der Abstand des Punktes $P(5|-3|5)$ von der Ebene $E: 2x_1 - 2x_2 + x_3 = 3$.</p>
 
                             <div class="space-y-4">
-                                <div class="bg-mocha-800 p-4 rounded-xl border-l-4 border-blue-500">
+                                <div class="bg-mocha-800 p-4 rounded-xl border border-blue-500/45">
                                     <strong class="text-blue-400 block mb-2">Schritt 1: Lotgerade aufstellen</strong>
                                     <p class="text-sm text-creme-200 mb-2">Den Normalenvektor lesen wir aus der Koordinatenform ab: $\\vec{n} = \\begin{pmatrix} 2 \\\\ -2 \\\\ 1 \\end{pmatrix}$</p>
                                     <div class="math-box text-center text-gold-300">$$h: \\vec{x} = \\begin{pmatrix} 5 \\\\ -3 \\\\ 5 \\end{pmatrix} + t \\cdot \\begin{pmatrix} 2 \\\\ -2 \\\\ 1 \\end{pmatrix}$$</div>
                                 </div>
 
-                                <div class="bg-mocha-800 p-4 rounded-xl border-l-4 border-green-500">
+                                <div class="bg-mocha-800 p-4 rounded-xl border border-green-500/45">
                                     <strong class="text-green-400 block mb-2">Schritt 2: Schnitt mit der Ebene</strong>
                                     <p class="text-sm text-creme-200 mb-2">Die Zeilen $x_1 = 5+2t$, $x_2 = -3-2t$, $x_3 = 5+t$ setzen wir in $E$ ein:</p>
                                     <div class="text-sm text-creme-200 space-y-1 font-mono bg-mocha-900 p-3 rounded-lg border border-mocha-600">
@@ -1522,14 +1585,14 @@
                                     </div>
                                 </div>
 
-                                <div class="bg-mocha-800 p-4 rounded-xl border-l-4 border-purple-500">
+                                <div class="bg-mocha-800 p-4 rounded-xl border border-purple-500/45">
                                     <strong class="text-purple-400 block mb-2">Schritt 3: Lotfußpunkt bestimmen</strong>
                                     <p class="text-sm text-creme-200 mb-2">$t = -2$ zurück in die Lotgerade $h$:</p>
                                     <div class="math-box text-center text-creme-100">$$\\vec{f} = \\begin{pmatrix} 5 \\\\ -3 \\\\ 5 \\end{pmatrix} - 2 \\begin{pmatrix} 2 \\\\ -2 \\\\ 1 \\end{pmatrix} = \\begin{pmatrix} 1 \\\\ 1 \\\\ 3 \\end{pmatrix} \\quad \\Rightarrow \\quad F(1|1|3)$$</div>
-                                    <p class="text-xs text-creme-300 mt-1">Probe: $2(1) - 2(1) + 3 = 3$ &#10003; &ndash; $F$ liegt tatsächlich in $E$.</p>
+                                    <p class="text-xs text-creme-300 mt-1">Probe: $2(1) - 2(1) + 3 = 3$. $F$ liegt also wirklich in $E$.</p>
                                 </div>
 
-                                <div class="bg-mocha-800 p-4 rounded-xl border-l-4 border-gold-500">
+                                <div class="bg-mocha-800 p-4 rounded-xl border border-gold-500/45">
                                     <strong class="text-gold-400 block mb-2">Schritt 4: Abstand berechnen</strong>
                                     <div class="math-box text-center text-creme-100">$$\\vec{PF} = \\begin{pmatrix} 1 \\\\ 1 \\\\ 3 \\end{pmatrix} - \\begin{pmatrix} 5 \\\\ -3 \\\\ 5 \\end{pmatrix} = \\begin{pmatrix} -4 \\\\ 4 \\\\ -2 \\end{pmatrix}$$</div>
                                     <div class="math-box text-center text-gold-300 font-bold mt-2">$$d = \\sqrt{16 + 16 + 4} = \\sqrt{36} = 6$$</div>
@@ -1545,9 +1608,9 @@
 
                         <!-- HNF -->
                         <div class="bg-mocha-800 p-6 md:p-8 rounded-2xl shadow-lg border border-mocha-600">
-                            <h4 class="text-xl font-bold text-amber-500 mb-4">A2 &ndash; Die Hesse'sche Normalenform (HNF)</h4>
+                            <h4 class="text-xl font-bold text-gold-400 mb-4">A2 &ndash; Die Hesse'sche Normalenform (HNF)</h4>
 
-                            <div class="bg-mocha-900 p-5 rounded-xl border-l-4 border-amber-500 mb-6 shadow-inner">
+                            <div class="bg-mocha-900 p-5 rounded-xl border border-amber-500/45 mb-6 shadow-inner">
                                 <strong class="text-white block mb-2 text-lg">Warum funktioniert das?</strong>
                                 <p class="text-sm text-creme-200 mb-2">Wir nehmen den Verbindungsvektor $\\vec{AP}$ von einem beliebigen Aufpunkt $A$ der Ebene zum Punkt $P$. Dieser Vektor zeigt "irgendwie schräg" zur Ebene.</p>
                                 <p class="text-sm text-creme-200 mb-2">Das Skalarprodukt mit dem Normalenvektor misst genau den Anteil, der <strong class="text-white">senkrecht</strong> zur Ebene zeigt &ndash; also die <strong class="text-white">Projektion auf die Normalenrichtung</strong>. Genau das ist der Abstand.</p>
@@ -1574,7 +1637,7 @@
                                 <strong class="text-white block mb-2">Dasselbe Beispiel &ndash; in einer Zeile</strong>
                                 <p class="text-sm text-creme-200 mb-2">$P(5|-3|5)$ und $E: 2x_1 - 2x_2 + x_3 = 3$, also $|\\vec{n}| = \\sqrt{4+4+1} = 3$:</p>
                                 <div class="math-box text-center text-gold-300 font-bold">$$d = \\frac{|2 \\cdot 5 - 2 \\cdot (-3) + 1 \\cdot 5 - 3|}{3} = \\frac{|10 + 6 + 5 - 3|}{3} = \\frac{18}{3} = 6$$</div>
-                                <p class="text-xs text-creme-300 mt-2 text-center">Gleiches Ergebnis wie oben &ndash; aber ohne Lotfußpunkt.</p>
+                                <p class="text-xs text-creme-300 mt-2 text-center">Gleiches Ergebnis wie oben, aber ohne Lotfußpunkt.</p>
                             </div>
 
                             <div class="bg-red-900/20 border border-red-500/30 rounded-xl p-4 mb-6">
@@ -1604,12 +1667,12 @@
                     <!-- ================= B: Punkt - Gerade ================= -->
                     <div class="mb-16" id="sec17B">
                         <h3 class="text-2xl font-bold text-white mb-2 border-b border-mocha-600 pb-2">B. Abstand Punkt &ndash; Gerade</h3>
-                        <p class="text-creme-300 text-sm mb-6">Drei Wege führen zum Ziel &ndash; zwei davon liefern zusätzlich den Lotfußpunkt.</p>
+                        <p class="text-creme-300 text-sm mb-6">Drei Wege führen zum Ziel. Zwei davon liefern zusätzlich den Lotfußpunkt.</p>
 
                         <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-stretch mb-8">
                             <div class="lg:col-span-3 bg-mocha-800 p-6 rounded-2xl shadow-lg border border-mocha-600">
                                 <h4 class="text-xl font-bold text-gold-400 mb-3">B1 &ndash; Über die Hilfsebene</h4>
-                                <p class="text-creme-200 text-sm mb-4">Der Trick: Wir bauen eine künstliche <strong class="text-white">Hilfsebene</strong>, die als "Auffangnetz" für das Lot dient.</p>
+                                <p class="text-creme-200 text-sm mb-4">Wir bauen eine <strong class="text-white">Hilfsebene</strong>, die das Lot auffängt.</p>
                                 <div class="bg-mocha-900 p-5 rounded-xl border border-mocha-600 space-y-3 text-sm text-creme-200">
                                     <p><strong class="text-white">1. Hilfsebene $E_H$ aufstellen:</strong> Aufpunkt ist $P$, Normalenvektor ist der <strong class="text-white">Richtungsvektor $\\vec{u}$ der Geraden</strong>. Dadurch steht $E_H$ exakt senkrecht auf $g$.</p>
                                     <p><strong class="text-white">2. Lotfußpunkt $F$ berechnen:</strong> Schneide $g$ mit $E_H$.</p>
@@ -1617,11 +1680,11 @@
                                 </div>
 
                                 <h4 class="text-xl font-bold text-gold-400 mt-6 mb-3">B2 &ndash; Über den Laufpunkt (ohne Hilfsebene)</h4>
-                                <p class="text-creme-200 text-sm mb-3">Noch direkter: Wir schreiben den allgemeinen Punkt $F(r)$ der Geraden hin und fordern, dass $\\vec{PF}$ senkrecht auf $\\vec{u}$ steht.</p>
-                                <div class="bg-amber-900/30 border-l-4 border-amber-500 p-4 rounded-r-xl border-y border-r border-amber-500/30">
+                                <p class="text-creme-200 text-sm mb-3">Wir schreiben den allgemeinen Punkt $F(r)$ der Geraden hin und fordern, dass $\\vec{PF}$ senkrecht auf $\\vec{u}$ steht.</p>
+                                <div class="bg-amber-900/30 border border-amber-500/45 p-4 rounded-xl">
                                     <div class="math-box text-center text-gold-300 font-bold text-lg">$$\\left( \\vec{f}(r) - \\vec{p} \\right) \\cdot \\vec{u} = 0$$</div>
                                 </div>
-                                <p class="text-creme-200 text-sm mt-3">Das ist <strong class="text-white">eine Gleichung mit einer Unbekannten</strong> $r$ &ndash; schnell gelöst. Dieses Prinzip ist der Schlüssel zu Abschnitt D.</p>
+                                <p class="text-creme-200 text-sm mt-3">Das ist <strong class="text-white">eine Gleichung mit einer Unbekannten</strong> $r$ und schnell gelöst. Nach demselben Muster funktioniert Abschnitt D.</p>
                             </div>
 
                             <div class="lg:col-span-2 bg-mocha-800 border border-mocha-600 rounded-2xl p-4 shadow-lg flex flex-col items-center">
@@ -1641,7 +1704,7 @@
                             <p class="text-creme-100 mb-5">Abstand von $P(4|5|3)$ zur Geraden $g: \\vec{x} = \\begin{pmatrix} 1 \\\\ 2 \\\\ 3 \\end{pmatrix} + r \\begin{pmatrix} 2 \\\\ 1 \\\\ -2 \\end{pmatrix}$</p>
 
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                                <div class="bg-mocha-800 p-5 rounded-xl border-l-4 border-blue-500">
+                                <div class="bg-mocha-800 p-5 rounded-xl border border-blue-500/45">
                                     <strong class="text-blue-400 block mb-3">Weg B1: Hilfsebene</strong>
                                     <p class="text-sm text-creme-200 mb-2">$E_H$ hat $\\vec{n} = \\vec{u} = \\begin{pmatrix} 2 \\\\ 1 \\\\ -2 \\end{pmatrix}$ und geht durch $P$:</p>
                                     <div class="text-sm font-mono bg-mocha-900 p-3 rounded-lg border border-mocha-600 text-creme-100 mb-3">
@@ -1654,7 +1717,7 @@
                                     </div>
                                 </div>
 
-                                <div class="bg-mocha-800 p-5 rounded-xl border-l-4 border-green-500">
+                                <div class="bg-mocha-800 p-5 rounded-xl border border-green-500/45">
                                     <strong class="text-green-400 block mb-3">Weg B2: Laufpunkt</strong>
                                     <p class="text-sm text-creme-200 mb-2">Allgemeiner Punkt minus $P$:</p>
                                     <div class="math-box text-center text-creme-100 text-sm mb-2">$$\\vec{f}(r) - \\vec{p} = \\begin{pmatrix} 2r-3 \\\\ r-3 \\\\ -2r \\end{pmatrix}$$</div>
@@ -1663,11 +1726,11 @@
                                         <div>$2(2r-3) + (r-3) + (-2)(-2r) = 0$</div>
                                         <div>$9r - 9 = 0 \\Rightarrow r = 1$</div>
                                     </div>
-                                    <p class="text-xs text-creme-300 mt-2">Gleiches $r$ &ndash; nur ohne Umweg über eine Ebene.</p>
+                                    <p class="text-xs text-creme-300 mt-2">Gleiches $r$, nur ohne Umweg über eine Ebene.</p>
                                 </div>
                             </div>
 
-                            <div class="bg-mocha-800 p-5 rounded-xl border-l-4 border-gold-500 mt-5">
+                            <div class="bg-mocha-800 p-5 rounded-xl border border-gold-500/45 mt-5">
                                 <strong class="text-gold-400 block mb-2">Gemeinsamer Abschluss</strong>
                                 <div class="math-box text-center text-creme-100">$$\\vec{f} = \\begin{pmatrix} 1 \\\\ 2 \\\\ 3 \\end{pmatrix} + 1 \\cdot \\begin{pmatrix} 2 \\\\ 1 \\\\ -2 \\end{pmatrix} = \\begin{pmatrix} 3 \\\\ 3 \\\\ 1 \\end{pmatrix} \\quad \\Rightarrow \\quad F(3|3|1)$$</div>
                                 <div class="math-box text-center text-creme-100 mt-2">$$\\vec{PF} = \\begin{pmatrix} -1 \\\\ -2 \\\\ -2 \\end{pmatrix} \\quad \\Rightarrow \\quad d = \\sqrt{1+4+4} = 3$$</div>
@@ -1676,12 +1739,12 @@
 
                         <!-- B3 Kreuzprodukt -->
                         <div class="bg-mocha-800 p-6 md:p-8 rounded-2xl shadow-lg border border-mocha-600">
-                            <h4 class="text-xl font-bold text-amber-500 mb-4">B3 &ndash; Die Flächenformel (Kreuzprodukt)</h4>
+                            <h4 class="text-xl font-bold text-gold-400 mb-4">B3 &ndash; Die Flächenformel (Kreuzprodukt)</h4>
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                                 <div>
                                     <p class="text-sm text-creme-200 mb-4">Spannt man aus dem Richtungsvektor $\\vec{u}$ und dem Verbindungsvektor $\\vec{AP}$ ein <strong class="text-white">Parallelogramm</strong> auf, so ist dessen Flächeninhalt $|\\vec{AP} \\times \\vec{u}|$.</p>
                                     <p class="text-sm text-creme-200 mb-4">Für jedes Parallelogramm gilt aber auch: <strong class="text-white">Fläche = Grundseite $\\cdot$ Höhe</strong>. Die Grundseite ist $|\\vec{u}|$, die Höhe ist genau der gesuchte Abstand $d$. Umstellen liefert:</p>
-                                    <div class="bg-amber-900/30 border-l-4 border-amber-500 p-4 rounded-r-xl border-y border-r border-amber-500/30">
+                                    <div class="bg-amber-900/30 border border-amber-500/45 p-4 rounded-xl">
                                         <div class="math-box text-center text-gold-300 font-bold text-lg">$$d = \\frac{|\\vec{AP} \\times \\vec{u}|}{|\\vec{u}|}$$</div>
                                     </div>
                                     <p class="text-xs text-creme-300 mt-3">$A$ ist der Stützpunkt der Geraden. Vorteil: eine einzige Formel, kein Gleichungslösen. Nachteil: <strong class="text-white">kein Lotfußpunkt</strong>.</p>
@@ -1726,11 +1789,11 @@
                     <!-- ================= C: Parallele Geraden ================= -->
                     <div class="mb-16" id="sec17C">
                         <h3 class="text-2xl font-bold text-white mb-2 border-b border-mocha-600 pb-2">C. Abstand paralleler Geraden</h3>
-                        <p class="text-creme-300 text-sm mb-6">Der einfachste Fall &ndash; wenn man den einen Gedanken erst mal hat.</p>
+                        <p class="text-creme-300 text-sm mb-6">Der einfachste Fall, sobald man den Trick kennt.</p>
 
                         <div class="bg-mocha-800 p-6 md:p-8 rounded-2xl shadow-lg border border-mocha-600 mb-8">
-                            <div class="bg-mocha-900 p-5 rounded-xl border-l-4 border-gold-500 mb-6 shadow-inner">
-                                <strong class="text-white block mb-2 text-lg">Die entscheidende Beobachtung</strong>
+                            <div class="bg-mocha-900 p-5 rounded-xl border border-gold-500/45 mb-6 shadow-inner">
+                                <strong class="text-white block mb-2 text-lg">Warum das so einfach ist</strong>
                                 <p class="text-sm text-creme-200">Parallele Geraden haben <strong class="text-white">überall denselben Abstand</strong>. Man darf sich also auf $h$ einen <strong class="text-white">beliebigen Punkt $B$ herauspicken</strong> &ndash; am bequemsten den Stützpunkt &ndash; und dessen Abstand zur Geraden $g$ berechnen. Damit ist das Problem auf Abschnitt B zurückgeführt.</p>
                             </div>
 
@@ -1768,13 +1831,13 @@
                             </div>
                             <p class="text-creme-100 mb-5">$g: \\vec{x} = \\begin{pmatrix} 1 \\\\ 2 \\\\ 3 \\end{pmatrix} + r \\begin{pmatrix} 2 \\\\ 1 \\\\ -2 \\end{pmatrix}$ und $h: \\vec{x} = \\begin{pmatrix} 4 \\\\ 5 \\\\ 3 \\end{pmatrix} + s \\begin{pmatrix} 2 \\\\ 1 \\\\ -2 \\end{pmatrix}$</p>
 
-                            <div class="bg-mocha-800 p-4 rounded-xl border-l-4 border-blue-500 mb-4">
+                            <div class="bg-mocha-800 p-4 rounded-xl border border-blue-500/45 mb-4">
                                 <strong class="text-blue-400 block mb-1">Schritt 0: Parallelität sichern</strong>
-                                <p class="text-sm text-creme-200">Die Richtungsvektoren sind identisch, also kollinear. Punktprobe: Liegt $B(4|5|3)$ auf $g$? Zeile I liefert $4 = 1+2r \\Rightarrow r = 1{,}5$, Zeile II aber $5 = 2 + r \\Rightarrow r = 3$. Widerspruch &ndash; die Geraden sind <strong class="text-white">echt parallel</strong>.</p>
+                                <p class="text-sm text-creme-200">Die Richtungsvektoren sind identisch, also kollinear. Punktprobe: Liegt $B(4|5|3)$ auf $g$? Zeile I liefert $4 = 1+2r \\Rightarrow r = 1{,}5$, Zeile II aber $5 = 2 + r \\Rightarrow r = 3$. Widerspruch, die Geraden sind also <strong class="text-white">echt parallel</strong>.</p>
                             </div>
 
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                                <div class="bg-mocha-800 p-5 rounded-xl border-l-4 border-green-500">
+                                <div class="bg-mocha-800 p-5 rounded-xl border border-green-500/45">
                                     <strong class="text-green-400 block mb-2">Weg C1</strong>
                                     <p class="text-sm text-creme-200 mb-2">Das ist exakt die Rechnung aus Beispiel B mit $B(4|5|3)$:</p>
                                     <div class="text-sm font-mono bg-mocha-900 p-3 rounded-lg border border-mocha-600 text-creme-100 space-y-1">
@@ -1783,7 +1846,7 @@
                                         <div>$d = |\\vec{BF}| = 3$</div>
                                     </div>
                                 </div>
-                                <div class="bg-mocha-800 p-5 rounded-xl border-l-4 border-amber-500">
+                                <div class="bg-mocha-800 p-5 rounded-xl border border-amber-500/45">
                                     <strong class="text-amber-400 block mb-2">Weg C2</strong>
                                     <p class="text-sm text-creme-200 mb-2">$\\vec{AB} = \\begin{pmatrix} 3 \\\\ 3 \\\\ 0 \\end{pmatrix}$, Kreuzprodukt wie in B3:</p>
                                     <div class="math-box text-center text-creme-100 text-sm">$$d = \\frac{|\\vec{AB} \\times \\vec{u}|}{|\\vec{u}|} = \\frac{9}{3} = 3$$</div>
@@ -1796,7 +1859,7 @@
                     <!-- ================= D: Windschiefe Geraden ================= -->
                     <div id="sec17D">
                         <h3 class="text-2xl font-bold text-white mb-2 border-b border-mocha-600 pb-2">D. Abstand windschiefer Geraden</h3>
-                        <p class="text-creme-300 text-sm mb-6">Die Königsdisziplin &ndash; und der einzige Fall, in dem sich die drei Verfahren wirklich unterscheiden.</p>
+                        <p class="text-creme-300 text-sm mb-6">Der aufwendigste Fall. Nur hier unterscheiden sich die drei Verfahren im Ergebnis, das sie liefern.</p>
 
                         <div class="bg-mocha-800 p-6 rounded-2xl shadow-lg border border-mocha-600 mb-8">
                             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-stretch">
@@ -1807,10 +1870,10 @@
                                     </div>
                                 </div>
                                 <div class="lg:col-span-3 order-1 lg:order-2">
-                                    <div class="bg-mocha-900 p-5 rounded-xl border-l-4 border-gold-500 shadow-inner mb-4">
+                                    <div class="bg-mocha-900 p-5 rounded-xl border border-gold-500/45 shadow-inner mb-4">
                                         <strong class="text-white block mb-2 text-lg">Das gemeinsame Lot</strong>
                                         <p class="text-sm text-creme-200 mb-2">Zwischen zwei windschiefen Geraden gibt es <strong class="text-white">genau eine</strong> Strecke, die auf beiden senkrecht steht: das <strong class="text-white">gemeinsame Lot</strong>. Seine Länge ist der gesuchte Abstand.</p>
-                                        <p class="text-sm text-creme-200">Da diese Strecke senkrecht auf $\\vec{u}$ <em>und</em> auf $\\vec{v}$ steht, zeigt sie in Richtung $\\vec{u} \\times \\vec{v}$ &ndash; das ist der rote Faden aller drei Verfahren.</p>
+                                        <p class="text-sm text-creme-200">Da diese Strecke senkrecht auf $\\vec{u}$ <em>und</em> auf $\\vec{v}$ steht, zeigt sie in Richtung $\\vec{u} \\times \\vec{v}$ &ndash; darauf laufen alle drei Verfahren hinaus.</p>
                                     </div>
                                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                         <div class="bg-mocha-900 p-3 rounded-xl border border-mocha-600 text-center">
@@ -1848,17 +1911,17 @@
                             </div>
 
                             <div class="space-y-4">
-                                <div class="bg-mocha-900 p-4 rounded-xl border-l-4 border-blue-500">
+                                <div class="bg-mocha-900 p-4 rounded-xl border border-blue-500/45">
                                     <strong class="text-blue-400 block mb-2">Normalenvektor der Hilfsebene</strong>
                                     <div class="math-box text-center text-creme-100">$$\\vec{n} = \\vec{u} \\times \\vec{v} = \\begin{pmatrix} 2 \\\\ 1 \\\\ -2 \\end{pmatrix} \\times \\begin{pmatrix} 1 \\\\ 2 \\\\ 2 \\end{pmatrix} = \\begin{pmatrix} 6 \\\\ -6 \\\\ 3 \\end{pmatrix}$$</div>
                                     <p class="text-sm text-creme-200 mt-2 text-center">Wir kürzen mit 3 zu $\\vec{n} = \\begin{pmatrix} 2 \\\\ -2 \\\\ 1 \\end{pmatrix}$, also $|\\vec{n}| = 3$.</p>
                                 </div>
-                                <div class="bg-mocha-900 p-4 rounded-xl border-l-4 border-green-500">
+                                <div class="bg-mocha-900 p-4 rounded-xl border border-green-500/45">
                                     <strong class="text-green-400 block mb-2">Koordinatenform von $E_H$</strong>
                                     <p class="text-sm text-creme-200 mb-2">Stützpunkt $A(1|2|3)$ einsetzen: $2(1) - 2(2) + 3 = 1$</p>
                                     <div class="math-box text-center text-gold-300">$$E_H: 2x_1 - 2x_2 + x_3 = 1$$</div>
                                 </div>
-                                <div class="bg-mocha-900 p-4 rounded-xl border-l-4 border-gold-500">
+                                <div class="bg-mocha-900 p-4 rounded-xl border border-gold-500/45">
                                     <strong class="text-gold-400 block mb-2">Abstand von $B(6|-3|1)$ zu $E_H$</strong>
                                     <div class="math-box text-center text-gold-300 font-bold">$$d = \\frac{|2 \\cdot 6 - 2 \\cdot (-3) + 1 - 1|}{3} = \\frac{|12 + 6 + 1 - 1|}{3} = \\frac{18}{3} = 6$$</div>
                                 </div>
@@ -1874,13 +1937,13 @@
 
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                                 <div>
-                                    <div class="bg-mocha-900 p-5 rounded-xl border-l-4 border-gold-500 shadow-inner mb-4">
+                                    <div class="bg-mocha-900 p-5 rounded-xl border border-gold-500/45 shadow-inner mb-4">
                                         <strong class="text-white block mb-2">Die Idee: eine Rundreise, die bei null endet</strong>
                                         <p class="text-sm text-creme-200 mb-2">Wir laufen im Kreis: von $A$ ein Stück auf $g$ zum Fußpunkt $F_g$, dann über das Lot zu $F_h$, dann auf $h$ zurück zu $B$ und schließlich von $B$ direkt zurück zu $A$. Wir sind wieder am Start &ndash; die Vektorkette summiert sich also zu null:</p>
                                         <div class="math-box text-center text-gold-300 font-bold text-sm mt-3">$$r\\,\\vec{u} + \\vec{w} - s\\,\\vec{v} - \\vec{AB} = \\vec{0}$$</div>
                                     </div>
                                     <p class="text-sm text-creme-200 mb-3">Nach dem Verbindungsvektor $\\vec{w}$ zwischen den beiden Fußpunkten aufgelöst heißt das:</p>
-                                    <div class="bg-amber-900/30 border-l-4 border-amber-500 p-4 rounded-r-xl border-y border-r border-amber-500/30">
+                                    <div class="bg-amber-900/30 border border-amber-500/45 p-4 rounded-xl">
                                         <div class="math-box text-center text-gold-300 font-bold">$$\\vec{w}(r,s) = \\vec{AB} + s\\,\\vec{v} - r\\,\\vec{u}$$</div>
                                     </div>
                                 </div>
@@ -1935,17 +1998,17 @@
                                         <div class="math-box text-center text-gold-300 font-bold">$$\\vec{w} \\cdot \\vec{v} = 0$$</div>
                                     </div>
                                 </div>
-                                <p class="text-sm text-creme-200 mt-3">Ein $2 \\times 2$-LGS &ndash; und danach kennt man nicht nur den Abstand, sondern auch <strong class="text-white">die beiden Punkte, an denen die Geraden einander am nächsten kommen</strong>.</p>
+                                <p class="text-sm text-creme-200 mt-3">Ein $2 \\times 2$-LGS. Danach kennt man neben dem Abstand auch <strong class="text-white">die beiden Punkte, an denen die Geraden einander am nächsten kommen</strong>.</p>
                             </div>
 
                             <div class="space-y-4">
-                                <div class="bg-mocha-900 p-4 rounded-xl border-l-4 border-blue-500">
+                                <div class="bg-mocha-900 p-4 rounded-xl border border-blue-500/45">
                                     <strong class="text-blue-400 block mb-2">Schritt 1: $\\vec{w}$ allgemein aufstellen</strong>
                                     <p class="text-sm text-creme-200 mb-2">Mit $\\vec{AB} = \\begin{pmatrix} 5 \\\\ -5 \\\\ -2 \\end{pmatrix}$:</p>
                                     <div class="math-box text-center text-creme-100">$$\\vec{w} = \\begin{pmatrix} 5 \\\\ -5 \\\\ -2 \\end{pmatrix} + s \\begin{pmatrix} 1 \\\\ 2 \\\\ 2 \\end{pmatrix} - r \\begin{pmatrix} 2 \\\\ 1 \\\\ -2 \\end{pmatrix} = \\begin{pmatrix} 5 + s - 2r \\\\ -5 + 2s - r \\\\ -2 + 2s + 2r \\end{pmatrix}$$</div>
                                 </div>
 
-                                <div class="bg-mocha-900 p-4 rounded-xl border-l-4 border-green-500">
+                                <div class="bg-mocha-900 p-4 rounded-xl border border-green-500/45">
                                     <strong class="text-green-400 block mb-2">Schritt 2: Das LGS aufstellen</strong>
                                     <div class="text-sm text-creme-200 space-y-2">
                                         <p><strong class="text-white">I:</strong> $\\vec{w} \\cdot \\vec{u} = 0$</p>
@@ -1964,7 +2027,7 @@
                                     </div>
                                 </div>
 
-                                <div class="bg-mocha-900 p-4 rounded-xl border-l-4 border-purple-500">
+                                <div class="bg-mocha-900 p-4 rounded-xl border border-purple-500/45">
                                     <strong class="text-purple-400 block mb-2">Schritt 3: Die Lotfußpunkte</strong>
                                     <p class="text-sm text-creme-200 mb-2">Aus dem LGS: $r = 1$ und $s = 1$. Einsetzen in die Geraden:</p>
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1979,7 +2042,7 @@
                                     </div>
                                 </div>
 
-                                <div class="bg-mocha-900 p-4 rounded-xl border-l-4 border-gold-500">
+                                <div class="bg-mocha-900 p-4 rounded-xl border border-gold-500/45">
                                     <strong class="text-gold-400 block mb-2">Schritt 4: Der Abstand</strong>
                                     <div class="math-box text-center text-creme-100">$$\\vec{w} = \\vec{f_h} - \\vec{f_g} = \\begin{pmatrix} 4 \\\\ -4 \\\\ 2 \\end{pmatrix}$$</div>
                                     <div class="math-box text-center text-gold-300 font-bold mt-2">$$d = \\sqrt{16 + 16 + 4} = \\sqrt{36} = 6$$</div>
@@ -1990,14 +2053,14 @@
 
                         <!-- D3 -->
                         <div class="bg-mocha-800 p-6 md:p-8 rounded-2xl shadow-lg border border-mocha-600 mb-8">
-                            <h4 class="text-xl font-bold text-amber-500 mb-4">D3 &ndash; Die Spatprodukt-Formel</h4>
+                            <h4 class="text-xl font-bold text-gold-400 mb-4">D3 &ndash; Die Spatprodukt-Formel</h4>
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
                                 <div>
-                                    <p class="text-sm text-creme-200 mb-3">Fasst man D1 in eine einzige Formel zusammen, erhält man den <strong class="text-white">Einzeiler</strong>: Man projiziert den Verbindungsvektor $\\vec{AB}$ auf die Richtung des gemeinsamen Lots.</p>
-                                    <div class="bg-amber-900/30 border-l-4 border-amber-500 p-4 rounded-r-xl border-y border-r border-amber-500/30">
+                                    <p class="text-sm text-creme-200 mb-3">D1 lässt sich zu einer einzigen Formel zusammenfassen. Man projiziert den Verbindungsvektor $\\vec{AB}$ auf die Richtung des gemeinsamen Lots.</p>
+                                    <div class="bg-amber-900/30 border border-amber-500/45 p-4 rounded-xl">
                                         <div class="math-box text-center text-gold-300 font-bold text-lg">$$d = \\frac{|\\vec{AB} \\cdot (\\vec{u} \\times \\vec{v})|}{|\\vec{u} \\times \\vec{v}|}$$</div>
                                     </div>
-                                    <p class="text-xs text-creme-300 mt-3">Der Zähler heißt <strong class="text-white">Spatprodukt</strong> und ist das Volumen des von $\\vec{AB}$, $\\vec{u}$ und $\\vec{v}$ aufgespannten Spats. Geteilt durch die Grundfläche $|\\vec{u} \\times \\vec{v}|$ bleibt die Höhe &ndash; der Abstand.</p>
+                                    <p class="text-xs text-creme-300 mt-3">Der Zähler heißt <strong class="text-white">Spatprodukt</strong> und ist das Volumen des von $\\vec{AB}$, $\\vec{u}$ und $\\vec{v}$ aufgespannten Spats. Geteilt durch die Grundfläche $|\\vec{u} \\times \\vec{v}|$ bleibt die Höhe, also der Abstand.</p>
                                 </div>
                                 <div class="bg-mocha-900 p-5 rounded-xl border border-mocha-600">
                                     <strong class="text-white block mb-2 text-sm">Am Beispiel D</strong>
@@ -2007,7 +2070,7 @@
                                 </div>
                             </div>
                             <div class="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4 mt-5">
-                                <p class="text-sm text-creme-200"><strong class="text-blue-300">Praktischer Nebeneffekt:</strong> Ist das Spatprodukt $= 0$, liegen $\\vec{AB}$, $\\vec{u}$ und $\\vec{v}$ in einer Ebene. Die Geraden sind dann <strong class="text-white">nicht</strong> windschief, sondern schneiden sich (oder sind parallel). Das Spatprodukt ist also gleichzeitig ein Windschief-Test.</p>
+                                <p class="text-sm text-creme-200"><strong class="text-blue-300">Praktischer Nebeneffekt:</strong> Ist das Spatprodukt $= 0$, liegen $\\vec{AB}$, $\\vec{u}$ und $\\vec{v}$ in einer Ebene. Die Geraden sind dann <strong class="text-white">nicht</strong> windschief, sondern schneiden sich oder sind parallel. Das Spatprodukt taugt damit auch als Windschief-Test.</p>
                             </div>
                         </div>
 
@@ -2047,8 +2110,8 @@
                                 </table>
                             </div>
                             <div class="bg-amber-900/20 border border-amber-500/30 rounded-xl p-4 mt-5">
-                                <strong class="text-gold-300 block mb-1">Merksatz fürs Abitur</strong>
-                                <p class="text-sm text-creme-200">Fragt die Aufgabe nur nach einer <strong class="text-white">Zahl</strong>, nimm D1 oder D3. Fragt sie nach <strong class="text-white">Punkten</strong> &ndash; "an welcher Stelle", "wo genau", "zu welchem Zeitpunkt" &ndash;, führt kein Weg an D2 vorbei.</p>
+                                <strong class="text-gold-300 block mb-1">Woran du das Verfahren erkennst</strong>
+                                <p class="text-sm text-creme-200">Fragt die Aufgabe nur nach einer Zahl, nimm D1 oder D3. Fragt sie danach, an welcher Stelle oder wann sich die Geraden am nächsten kommen, brauchst du D2.</p>
                             </div>
                         </div>
                     </div>
@@ -2194,7 +2257,7 @@
                 btnPrev.disabled = currentStep === 1; btnNext.disabled = currentStep === totalSteps; draw();
                 document.querySelectorAll('.step-card3').forEach(el => {
                     const step = parseInt(el.getAttribute('data-step'));
-                    if (step === currentStep) { el.classList.remove('opacity-40'); el.classList.add('opacity-100', 'border-l-4', 'shadow-md'); if(step===1) el.classList.add('border-blue-500'); if(step===2) el.classList.add('border-white'); if(step===3) el.classList.add('border-rose-500'); } 
+                    if (step === currentStep) { el.classList.remove('opacity-40'); el.classList.add('opacity-100', 'shadow-md'); if(step===1) el.classList.add('border-blue-500'); if(step===2) el.classList.add('border-white'); if(step===3) el.classList.add('border-rose-500'); } 
                     else if (step < currentStep) { el.classList.remove('opacity-40', 'shadow-md'); el.classList.add('opacity-100'); el.className = el.className.replace(/border-(blue|white|rose)-\d+/, 'border-mocha-600'); } 
                     else { el.classList.add('opacity-40'); el.classList.remove('opacity-100', 'shadow-md'); el.className = el.className.replace(/border-(blue|white|rose)-\d+/, 'border-mocha-600'); }
                 });
@@ -2416,7 +2479,7 @@
                 btnPrev.disabled = currentStep === 0; btnNext.disabled = currentStep === totalSteps; stepIndicator.innerText = `Schritt ${currentStep}/${totalSteps}`; draw();
                 document.querySelectorAll('.step-card9').forEach(el => {
                     const step = parseInt(el.getAttribute('data-step'));
-                    if (step === currentStep) { el.classList.remove('opacity-40'); el.classList.add('opacity-100', 'border-l-4', 'shadow-md'); if(step===1) el.classList.add('border-blue-500'); if(step===2) el.classList.add('border-green-500'); if(step===3) el.classList.add('border-red-500'); if(step===4) el.classList.add('border-white'); } 
+                    if (step === currentStep) { el.classList.remove('opacity-40'); el.classList.add('opacity-100', 'shadow-md'); if(step===1) el.classList.add('border-blue-500'); if(step===2) el.classList.add('border-green-500'); if(step===3) el.classList.add('border-red-500'); if(step===4) el.classList.add('border-white'); } 
                     else if (step < currentStep) { el.classList.remove('opacity-40', 'shadow-md'); el.classList.add('opacity-100'); el.className = el.className.replace(/border-(blue|green|red|white)-\d+/, 'border-mocha-600'); } 
                     else { el.classList.add('opacity-40'); el.classList.remove('opacity-100', 'shadow-md'); el.className = el.className.replace(/border-(blue|green|red|white)-\d+/, 'border-mocha-600'); }
                 });
@@ -2724,6 +2787,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             renderNav();
             renderContent();
+            const toggle = document.getElementById('navToggle');
+            if (toggle) toggle.onclick = () => setNavOpen(document.getElementById('nav-container').classList.contains('hidden'));
         });
     </script>
 </body>
