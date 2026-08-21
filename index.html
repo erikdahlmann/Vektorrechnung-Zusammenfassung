@@ -357,6 +357,29 @@
 
         let activeTopicId = '3d-koord';
 
+        // --- Adressierbare Kapitel ---
+        // Jedes Thema bekommt eine eigene Adresse, z. B. .../#abstandsprobleme.
+        // Damit lassen sich einzelne Kapitel verlinken, und Zurück und Vorwärts im Browser
+        // funktionieren wie erwartet.
+        function topicFromHash() {
+            let id = location.hash.replace(/^#/, '');
+            try { id = decodeURIComponent(id); } catch (e) { /* fehlerhafte Prozentzeichen ignorieren */ }
+            return topics.some(t => t.id === id) ? id : null;
+        }
+
+        function showTopic(id, updateHash = true) {
+            if (!topics.some(t => t.id === id)) return;
+            activeTopicId = id;
+            renderNav();
+            renderContent();
+            const main = document.getElementById('main-content');
+            if (main) main.scrollTop = 0;
+            setNavOpen(false);
+            if (updateHash && location.hash.replace(/^#/, '') !== id) {
+                history.pushState(null, '', '#' + id);
+            }
+        }
+
         // --- UI Hilfsfunktionen ---
         function renderNav() {
             const container = document.getElementById('nav-container');
@@ -367,13 +390,7 @@
                 btn.className = `nav-item ${isActive ? 'active' : ''}`;
                 btn.innerHTML = `<span class="nav-num">${index + 1}</span><span class="nav-t">${topic.title}</span>`;
                 btn.setAttribute('aria-current', isActive ? 'true' : 'false');
-                btn.onclick = () => {
-                    activeTopicId = topic.id;
-                    renderNav();
-                    renderContent();
-                    document.getElementById('main-content').scrollTop = 0; // Scroll nach oben!
-                    setNavOpen(false); // auf dem Handy die Kapitelliste wieder einklappen
-                };
+                btn.onclick = () => showTopic(topic.id);
                 container.appendChild(btn);
             });
             const label = document.getElementById('navToggleLabel');
@@ -2892,10 +2909,17 @@
 
         // --- App Start ---
         document.addEventListener('DOMContentLoaded', () => {
+            const gewuenscht = topicFromHash();
+            if (gewuenscht) activeTopicId = gewuenscht;
             renderNav();
             renderContent();
             const toggle = document.getElementById('navToggle');
             if (toggle) toggle.onclick = () => setNavOpen(document.getElementById('nav-container').classList.contains('hidden'));
+            // Zurück und Vorwärts im Browser sowie von außen gesetzte Adressen
+            window.addEventListener('hashchange', () => {
+                const id = topicFromHash();
+                if (id && id !== activeTopicId) showTopic(id, false);
+            });
         });
     </script>
 </body>
